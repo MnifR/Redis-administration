@@ -40,8 +40,6 @@ sudo apt update
 
 sudo apt install redis-server
 
-Make Redis as a service
-
 sudo nano /etc/redis/redis.conf
 ```
 Inside the file, find the supervised directive.
@@ -62,12 +60,83 @@ This directive allows you to declare an init system to manage Redis as a service
 supervised systemd
 
 . . .
+```
 
+```shell
 sudo systemctl restart redis.service
+
+sudo systemctl status redis
+
+sudo netstat -lnp | grep redis
+
+
+```
+Start redis cli
+```shell
+redis-cli
+
+127.0.0.1:6379> ping
 
 ```
 
-## What's included
+Output
+```shell
+PONG
+```
+
+Add password to redis
+
+```shell
+sudo nano /etc/redis/redis.conf
+```
+
+Scroll to the SECURITY section and look for a commented directive that reads:
+```shell
+
+# requirepass very-strong-password
+
+```
+
+Generate a very strong password
+
+```shell
+openssl rand 60 | openssl base64 -A
+```
+
+After setting the password, save and close the file, then restart Redis:
+```shell
+sudo systemctl restart redis.service
+
+```
+```shell
+redis-cli
+
+127.0.0.1:6379> 
+auth very-strong-password
+
+```
+
+Renaming Dangerous Commands
+
+Some of the commands that are considered dangerous include: FLUSHDB, FLUSHALL, KEYS, PEXPIRE, DEL, CONFIG, SHUTDOWN, BGREWRITEAOF, BGSAVE, SAVE, SPOP, SREM, RENAME, and DEBUG. This is not a comprehensive list, but renaming or disabling all of the commands in that list is a good starting point for enhancing your Redis server’s security.
+
+```shell
+sudo nano /etc/redis/redis.conf
+```
+
+```shell
+
+...
+# It is also possible to completely kill a command by renaming it into
+# an empty string:
+#
+rename-command FLUSHDB ""
+rename-command FLUSHALL ""
+rename-command DEBUG ""
+...
+```
+
+## Commands
 
 Some text
 
