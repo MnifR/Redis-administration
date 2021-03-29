@@ -17,27 +17,55 @@
 
 ## Table of contents
 
-- [Quick start](#quick-start)
-- [Status](#status)
-- [What's included](#whats-included)
+- [Presentation](#presentation)
+- [Install](#install)
+- [Command](#command)
 - [Bugs and feature requests](#bugs-and-feature-requests)
-- [Contributing](#contributing)
-- [Creators](#creators)
-- [Thanks](#thanks)
-- [Copyright and license](#copyright-and-license)
-
 
 ## Quick start
 
-Some text
+Redis is an in-memory key-value store that can be used as a database, cache, and message broker. The project is open source and it's currently licensed under the BSD license.
 
-- Instruction 1
-- Instruction 2
-- Instruction 3
+Redis delivers sub-millisecond response times that enable millions of requests per second to power demanding real-time applications such as games, ad brokers, financial dashboards, and many more!
 
-## Status
+Redis is written in C.
 
-Here goes all the budgets
+## Install
+
+Step 1 — Installing and Configuring Redis on Ubuntu 20.04
+
+```shell
+
+sudo apt update
+
+sudo apt install redis-server
+
+Make Redis as a service
+
+sudo nano /etc/redis/redis.conf
+```
+Inside the file, find the supervised directive.
+This directive allows you to declare an init system to manage Redis as a service, providing you with more control over its operation
+```shell
+
+. . .
+
+# If you run Redis from upstart or systemd, Redis can interact with your
+# supervision tree. Options:
+#   supervised no      - no supervision interaction
+#   supervised upstart - signal upstart by putting Redis into SIGSTOP mode
+#   supervised systemd - signal systemd by writing READY=1 to $NOTIFY_SOCKET
+#   supervised auto    - detect upstart or systemd method based on
+#                        UPSTART_JOB or NOTIFY_SOCKET environment variables
+# Note: these supervision methods only signal "process is ready."
+#       They do not enable continuous liveness pings back to your supervisor.
+supervised systemd
+
+. . .
+
+sudo systemctl restart redis.service
+
+```
 
 ## What's included
 
