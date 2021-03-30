@@ -19,7 +19,7 @@
 
 - [Start](#start)
 - [Install](#install)
-- [Data Types](#data-types)
+- [Configuration](#configuration)
 - [Keys](#keys)
 - [Commands](#commands)
 - [Bugs and feature requests](#bugs-and-feature-requests)
@@ -118,6 +118,23 @@ auth very-strong-password
 
 ```
 
+Yoou can set the password in the config file.
+
+```shell
+127.0.0.1:6379> CONFIG get requirepass 
+1) "requirepass" 
+2) "" 
+```
+
+By default, this property is blank, which means no password is set for this instance. You can change this property by executing the following command.
+```shell
+127.0.0.1:6379> CONFIG set requirepass "tutorialspoint" 
+OK 
+127.0.0.1:6379> CONFIG get requirepass 
+1) "requirepass" 
+2) "very-strong-password"
+```
+
 Renaming Dangerous Commands
 
 Some of the commands that are considered dangerous include: FLUSHDB, FLUSHALL, KEYS, PEXPIRE, DEL, CONFIG, SHUTDOWN, BGREWRITEAOF, BGSAVE, SAVE, SPOP, SREM, RENAME, and DEBUG. This is not a comprehensive list, but renaming or disabling all of the commands in that list is a good starting point for enhancing your Redis server’s security.
@@ -138,7 +155,7 @@ rename-command DEBUG ""
 ...
 ```
 
-## Data Types
+## Configuration
 
 Following is the basic syntax of Redis CONFIG command.
 
@@ -164,170 +181,147 @@ redis 127.0.0.1:6379> GET name
 "test"
 ```
 
-Hashes
-
-A Redis hash is a collection of key value pairs. Redis Hashes are maps between string fields and string values. Hence, they are used to represent objects.
-
+Run Commands on the Remote Server
 ```shell
-redis 127.0.0.1:6379> HMSET user:1 username test password newtest points 200 
+$ redis-cli -h host -p port -a password
+```
+
+Following example explains how we can get all statistics and information about the server.
+```shell
+redis 127.0.0.1:6379> INFO 
+# Server
+redis_version:6.0.12
+redis_git_sha1:00000000
+redis_git_dirty:0
+redis_build_id:cbd22e18adfcd606
+redis_mode:standalone
+os:Linux 5.4.0-1041-aws x86_64
+arch_bits:64
+multiplexing_api:epoll
+atomicvar_api:atomic-builtin
+gcc_version:10.2.1
+process_id:1
+run_id:f938cbb50e87a561a14874b833b7b4e1c1859bbe
+tcp_port:6379
+uptime_in_seconds:333773
+uptime_in_days:3
+hz:10
+configured_hz:10
+lru_clock:6495628
+executable:/data/redis-server
+config_file:/etc/redis/redis.conf
+io_threads_active:0
+...
+
+```
+## Redis - Replication
+
+redis.conf
+```shell
+#persistence
+dir /data
+dbfilename dump.rdb
+appendonly yes
+appendfilename "appendonly.aof"
+```
+Redis-1 configuration
+```shell
+protected-mode no
+port 6379
+
+#authentication
+masterauth very-strong-password
+requirepass very-strong-password
+```
+
+Redis-2 configuration
+```shell
+protected-mode no
+port 6379
+slaveof redis-1 6379
+
+#authentication
+masterauth very-strong-password
+requirepass very-strong-password
+```
+Redis-3 configuration
+```shell
+protected-mode no
+port 6379
+slaveof redis-1 6379
+
+#authentication
+masterauth very-strong-password
+requirepass very-strong-password
+```
+[Replication guidelines](https://redis.io/topics/replication)
+
+
+## Redis - Sentinel(Fail-over)
+Redis configuration Sentinel
+sentinel.conf
+```shell
+#********BASIC CONFIG************************************
+port 5000
+sentinel monitor mymaster redis-1 6379 2
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 1
+sentinel auth-pass mymaster a-very-complex-password-here
+#********************************************
+
+```
+[Sentinel guidelines](https://redis.io/topics/sentinel) 
+## Redis - Backup
+
+Redis SAVE command is used to create a backup of the current Redis database.
+```shell
+127.0.0.1:6379> SAVE  
 OK 
-redis 127.0.0.1:6379> HGETALL user:1  
-1) "username" 
-2) "test" 
-3) "password" 
-4) "newtest" 
-5) "points" 
-6) "200"
 ```
+This command will create a dump.rdb and appendonly.aof  file in your Redis directory.
 
-Lists
+Bgsave
 
-Redis Lists are simply lists of strings, sorted by insertion order. You can add elements to a Redis List on the head or on the tail.
-
+To create Redis backup, an alternate command BGSAVE is also available. This command will start the backup process and run this in the background.
 ```shell
-redis 127.0.0.1:6379> lpush test redis 
-(integer) 1 
-redis 127.0.0.1:6379> lpush test mongodb 
-(integer) 2 
-redis 127.0.0.1:6379> lpush test rabbitmq 
-(integer) 3 
-redis 127.0.0.1:6379> lrange test 0 10  
-
-1) "rabbitmq" 
-2) "mongodb" 
-3) "redis"
-
+127.0.0.1:6379> BGSAVE  
+Background saving started
 ```
+## Restore Redis Data
 
-Sets
-
-Redis Sets are an unordered collection of strings. In Redis, you can add, remove, and test for the existence of members in O(1) time complexity.
-
+To restore Redis data, move Redis backup file (dump.rdb) into your Redis directory and start the server. To get your Redis directory, use CONFIG command of Redis as shown below.
 ```shell
-redis 127.0.0.1:6379> sadd test redis 
-(integer) 1 
-redis 127.0.0.1:6379> sadd test mongodb 
-(integer) 1 
-redis 127.0.0.1:6379> sadd test rabbitmq 
-(integer) 1 
-redis 127.0.0.1:6379> sadd test rabbitmq 
-(integer) 0 
-redis 127.0.0.1:6379> smembers test  
-
-1) "rabbitmq" 
-2) "mongodb" 
-3) "redis" 
+127.0.0.1:6379> CONFIG get dir  
+1) "data" 
+2) "/home/user/backup"
 ```
-Sorted Sets
 
-Redis Sorted Sets are similar to Redis Sets, non-repeating collections of Strings. The difference is, every member of a Sorted Set is associated with a score, that is used in order to take the sorted set ordered, from the smallest to the greatest score. While members are unique, the scores may be repeated.
-
+## Restore Benchmark
+Redis benchmark is the utility to check the performance of Redis by running n commands simultaneously.
 ```shell
-redis 127.0.0.1:6379> zadd test 0 redis 
-(integer) 1 
-redis 127.0.0.1:6379> zadd test 0 mongodb 
-(integer) 1 
-redis 127.0.0.1:6379> zadd test 0 rabitmq 
-(integer) 1 
-redis 127.0.0.1:6379> zadd test 0 rabitmq 
-(integer) 0 
-redis 127.0.0.1:6379> ZRANGEBYSCORE test 0 1000  
+redis-benchmark [option] [option value]
 
-1) "redis" 
-2) "mongodb" 
-3) "rabbitmq" 
+redis-benchmark -n 100000
+PING_INLINE: 141043.72 requests per second 
+PING_BULK: 142857.14 requests per second 
+SET: 141442.72 requests per second 
+GET: 145348.83 requests per second 
+INCR: 137362.64 requests per second 
+LPUSH: 145348.83 requests per second 
+LPOP: 146198.83 requests per second 
+SADD: 146198.83 requests per second 
+SPOP: 149253.73 requests per second 
+LPUSH (needed to benchmark LRANGE): 148588.42 requests per second 
+LRANGE_100 (first 100 elements): 58411.21 requests per second 
+LRANGE_300 (first 300 elements): 21195.42 requests per second 
+LRANGE_500 (first 450 elements): 14539.11 requests per second 
+LRANGE_600 (first 600 elements): 10504.20 requests per second 
+MSET (10 keys): 93283.58 requests per second
+
 ```
-```shell
-redis 127.0.0.1:6379> INFO
-```
 
-## Keys
-
-Redis Keys Commands
-
-Following table lists some basic commands related to keys.
-Sr.No 	Command &                           Description
-1 	    DEL key                             This command deletes the key, if it exists.
-2 	    DUMP key                            This command returns a serialized version of the value stored at the specified key.
-3 	    EXISTS key                          This command checks whether the key exists or not.
-4 	    EXPIRE key seconds                  Sets the expiry of the key after the specified time.
-5 	    EXPIREAT key timestamp              Sets the expiry of the key after the specified time. Here time is in Unix timestamp format.
-6 	    PEXPIRE key milliseconds            Set the expiry of key in milliseconds.
-7 	    PEXPIREAT key milliseconds-timestamp Sets the expiry of the key in Unix timestamp specified as milliseconds.
-8 	    KEYS pattern                        Finds all keys matching the specified pattern.
-9 	    MOVE key db                         Moves a key to another database.
-10 	    PERSIST key                         Removes the expiration from the key.
-11 	    PTTL key                            Gets the remaining time in keys expiry in milliseconds.
-12     	TTL key                             Gets the remaining time in keys expiry.
-13 	    RANDOMKEY                           Returns a random key from Redis.
-14 	    RENAME key newkey                   Changes the key name.
-15 	    RENAMENX key newkey                 Renames the key, if a new key doesn't exist.
-16     	TYPE key                            Returns the data type of the value stored in the key.
-
-## Commands
-
-Redis Strings Commands
-
-Following table lists some basic commands to manage strings in Redis.
-Sr.No 	                                         Command & Description
-1 	SET key value                                This command sets the value at the specified key.
-2 	GET key                                      Gets the value of a key.
-3 	GETRANGE key start end                       Gets a substring of the string stored at a key.
-4 	GETSET key value
-
-Sets the string value of a key and return its old value.
-5 	GETBIT key offset
-
-Returns the bit value at the offset in the string value stored at the key.
-6 	MGET key1 [key2..]
-
-Gets the values of all the given keys
-7 	SETBIT key offset value
-
-Sets or clears the bit at the offset in the string value stored at the key
-8 	SETEX key seconds value
-
-Sets the value with the expiry of a key
-9 	SETNX key value
-
-Sets the value of a key, only if the key does not exist
-10 	SETRANGE key offset value
-
-Overwrites the part of a string at the key starting at the specified offset
-11 	STRLEN key
-
-Gets the length of the value stored in a key
-12 	MSET key value [key value ...]
-
-Sets multiple keys to multiple values
-13 	MSETNX key value [key value ...]
-
-Sets multiple keys to multiple values, only if none of the keys exist
-14 	PSETEX key milliseconds value
-
-Sets the value and expiration in milliseconds of a key
-15 	INCR key
-
-Increments the integer value of a key by one
-16 	INCRBY key increment
-
-Increments the integer value of a key by the given amount
-17 	INCRBYFLOAT key increment
-
-Increments the float value of a key by the given amount
-18 	DECR key
-
-Decrements the integer value of a key by one
-19 	DECRBY key decrement
-
-Decrements the integer value of a key by the given number
-20 	APPEND key value
-
-Appends a value to a key
-
-## Bugs and feature requests
-
-Have a bug or a feature request? Please first read the [issue guidelines](https://reponame/blob/master/CONTRIBUTING.md) and search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://reponame/issues/new).
+Following is a list of available options in Redis benchmark.
 
 ## Contributing
 
