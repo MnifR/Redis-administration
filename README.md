@@ -1,17 +1,14 @@
 <p align="center">
-  <a href="https://example.com/">
-    <img src="https://banner2.cleanpng.com/20180803/zth/kisspng-redis-logo-database-mongodb-gearman-redis-slide-nosql-taiwan-6-clasense4-blog-5b6409cda154a2.0682164215332827656608.jpg" alt="Logo" width=450 height=150>
+  <a href="https://redis.io">
+    <img src="https://download.logo.wine/logo/Redis/Redis-Logo.wine.png" alt="Logo" width=450 height=150>
   </a>
 
-  <h3 align="center">Logo</h3>
+
 
   <p align="center">
-    Short description
+    Redis Administration
     <br>
-    <a href="https://reponame/issues/new?template=bug.md">Report bug</a>
-    ·
-    <a href="https://reponame/issues/new?template=feature.md&labels=feature">Request feature</a>
-  </p>
+      </p>
 </p>
 
 
@@ -459,6 +456,3 @@ Range partitioning is accomplished by mapping ranges of objects into specific Re
 Hash Partitioning
 
 In this type of partitioning, a hash function (eg. modulus function) is used to convert the key into a number and then the data is stored in different-different Redis instances.
-
-
-
