@@ -323,15 +323,77 @@ MSET (10 keys): 93283.58 requests per second
 
 Following is a list of available options in Redis benchmark.
 
-## Contributing
+| No | Option | Description                                              | Default Value |
+|----|--------|----------------------------------------------------------|---------------|
+| 1  | -h     | Specifies server host name                               | 127.0.0.1     |
+| 2  | -p     | Specifies server port                                    | 6379          |
+| 3  | -s     | Specifies server socket                                  |               |
+| 4  | -c     | Specifies the number of parallel connections             | 50            |
+| 5  | -n     | Specifies the total number of requests                   | 10000         |
+| 6  | -d     | Specifies data size of SET/GET value in bytes            | 2             |
+| 7  | -k     | 1=keep alive, 0=reconnect                                | 1             |
+| 8  | -r     | Use random keys for SET/GET/INCR, random values for SADD |               |
+| 9  | -p     | Pipeline <numreq> requests                               | 1             |
+| 10 | -h     | Specifies server host name                               |               |
+| 11 | -f     | Forces Quiet to Redis. Just shows query/sec values       |               |
+| 12 | -csv   | Output in CSV format                                     |               |
+| 13 | -l     | Generates loop, Run the tests forever                    |               |
+| 14 | -t     | Only runs the comma-separated list of tests              |               |
+| 15 | -I     | Idle mode. Just opens N idle connections and wait        |               |
+  
+Following example shows the multiple usage options in Redis benchmark utility.
 
-Please read through our [contributing guidelines](https://reponame/blob/master/CONTRIBUTING.md). Included are directions for opening issues, coding standards, and notes on development.
+```shell
+redis-benchmark -h 127.0.0.1 -p 6379 -t set,lpush -n 100000 -q  
 
-Moreover, all HTML and CSS should conform to the [Code Guide](https://github.com/mdo/code-guide), maintained by [Main author](https://github.com/usernamemainauthor).
+SET: 146198.83 requests per second 
+LPUSH: 145560.41 requests per second 
+```
 
-Editor preferences are available in the [editor config](https://reponame/blob/master/.editorconfig) for easy use in common text editors. Read more and download plugins at <https://editorconfig.org/>.
+## Client Connection
+Maximum Number of Clients
 
-## Creators
+Redis accepts clients’ connections on the configured listening TCP port and on the Unix socket, if enabled. When a new client connection is accepted, the following operations are performed −
+
+    The client socket is put in non-blocking state since Redis uses multiplexing and non-blocking I/O.
+
+    The TCP_NODELAY option is set in order to ensure that we don't have delays in our connection.
+
+    A readable file event is created so that Redis is able to collect the client queries as soon as new data is available to be read on the socket.
+
+Maximum Number of Clients
+
+In Redis config (redis.conf), there is a property called maxclients, which describes the maximum number of clients that can connect to Redis.
+
+Following is the basic syntax of command.
+
+
+```shell
+config get maxclients  
+
+1) "maxclients" 
+2) "10000" 
+```
+
+By default, this property is set to 10000 (depending upon the maximum number of file descriptors limit of OS), although you can change this property.
+Example
+
+In the following example, we have set the maximum number of clients to 100000, while starting the server.
+
+
+```shell
+redis-server --maxclients 100000 
+```
+
+| No | Command        | Description                                                                                                                    |
+|----|----------------|--------------------------------------------------------------------------------------------------------------------------------|
+| 1  | CLIENT LIST    | Returns the list of clients connected to Redis server                                                                          |
+| 2  | CLIENT SETNAME | Assigns a name to the current connection                                                                                       |
+| 3  | CLIENT GETNAME | Returns the name of the current connection as set by CLIENT SETNAME                                                            |
+| 4  | CLIENT PAUSE   | This is a connections control command able to suspend all the Redis clients for the specified amount of time (in milliseconds) |
+| 5  | CLIENT KILL    | This command closes a given client connection.                                                                                 |
+
+## Redis - Pipelining
 
 **Creator 1**
 
