@@ -303,7 +303,8 @@ To create Redis backup, an alternate command BGSAVE is also available. This comm
 127.0.0.1:6379> BGSAVE  
 Background saving started
 ```
->For maximum data security, you should regularly create snapshots and activate the AOF mode. By doing so, it is practically impossible to lose any data. However, >these processes do tend to make the database run more slowly.
+>For maximum data security, you should regularly create snapshots and activate the AOF mode. By doing so, it is practically impossible to lose any data.
+However,these processes do tend to make the database run more slowly.
 
 
 ## Restore
