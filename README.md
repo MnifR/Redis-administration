@@ -20,9 +20,15 @@
 - [Start](#start)
 - [Install](#install)
 - [Configuration](#configuration)
-- [Keys](#keys)
-- [Commands](#commands)
-- [Bugs and feature requests](#bugs-and-feature-requests)
+- [Replication](#Replication)
+- [Sentinel](#Sentinel)
+- [Backup](#Backup)
+- [Restore](#Restore)
+- [Benchmark](#Benchmark)
+- [Client Connection](#Client Connection)
+- [Pipelining](#Pipelining)
+- [Partitioning](#Partitioning)
+- [Restore](#Restore)
 
 ## Start
 
@@ -214,7 +220,7 @@ io_threads_active:0
 ...
 
 ```
-## Redis - Replication
+## Replication
 
 redis.conf
 ```shell
@@ -257,7 +263,7 @@ requirepass very-strong-password
 [Replication guidelines](https://redis.io/topics/replication)
 
 
-## Redis - Sentinel(Fail-over)
+## Sentinel
 Redis configuration Sentinel
 sentinel.conf
 ```shell
@@ -272,7 +278,7 @@ sentinel auth-pass mymaster a-very-complex-password-here
 
 ```
 [Sentinel guidelines](https://redis.io/topics/sentinel) 
-## Redis - Backup
+## Backup
 
 Redis SAVE command is used to create a backup of the current Redis database.
 ```shell
@@ -288,7 +294,7 @@ To create Redis backup, an alternate command BGSAVE is also available. This comm
 127.0.0.1:6379> BGSAVE  
 Background saving started
 ```
-## Restore Redis Data
+## Restore
 
 To restore Redis data, move Redis backup file (dump.rdb) into your Redis directory and start the server. To get your Redis directory, use CONFIG command of Redis as shown below.
 ```shell
@@ -297,7 +303,7 @@ To restore Redis data, move Redis backup file (dump.rdb) into your Redis directo
 2) "/home/user/backup"
 ```
 
-## Restore Benchmark
+## Benchmark
 Redis benchmark is the utility to check the performance of Redis by running n commands simultaneously.
 ```shell
 redis-benchmark [option] [option value]
@@ -393,18 +399,66 @@ redis-server --maxclients 100000
 | 4  | CLIENT PAUSE   | This is a connections control command able to suspend all the Redis clients for the specified amount of time (in milliseconds) |
 | 5  | CLIENT KILL    | This command closes a given client connection.                                                                                 |
 
-## Redis - Pipelining
+## Pipelining
 
-**Creator 1**
+Redis is a TCP server and supports request/response protocol. In Redis, a request is accomplished with the following steps −
 
-- <https://github.com/usernamecreator1>
+    The client sends a query to the server, and reads from the socket, usually in a blocking way, for the server response.
 
-## Thanks
+    The server processes the command and sends the response back to the client.
 
-Some Text
+Meaning of Pipelining
 
-## Copyright and license
+The basic meaning of pipelining is, the client can send multiple requests to the server without waiting for the replies at all, and finally reads the replies in a single step.
+Example
 
-Code and documentation copyright 2011-2018 the authors. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
 
-Enjoy :metal:
+To check the Redis pipelining, just start the Redis instance and type the following command in the terminal.
+```shell
+$(echo -en "PING\r\n SET test redis\r\nGET test\r\nINCR visitor\r\nINCR visitor\r\nINCR visitor\r\n"; sleep 10) | nc localhost 6379  
++PONG 
++OK 
+redis 
+:1 
+:2 
+:3 
+```
+
+In the above example, we will check Redis connection by using PING command. We have set a string named tutorial with value redis. Later, we get that keys value and increment the visitor number three times. In the result, we can see that all commands are submitted to Redis once, and Redis provides the output of all commands in a single step.
+Benefits of Pipelining
+
+The benefit of this technique is a drastically improved protocol performance. The speedup gained by pipelining ranges from a factor of five for connections to localhost up to a factor of at least one hundred over slower internet connections.
+
+## Partitioning
+
+Partitioning is the process of splitting your data into multiple Redis instances, so that every instance will only contain a subset of your keys.
+Benefits of Partitioning
+
+    It allows for much larger databases, using the sum of the memory of many computers. Without partitioning you are limited to the amount of memory that a single computer can support.
+
+    It allows to scale the computational power to multiple cores and multiple computers, and the network bandwidth to multiple computers and network adapters.
+
+Disadvantages of Partitioning
+
+    Operations involving multiple keys are usually not supported. For instance, you can't perform the intersection between two sets if they are stored in the keys that are mapped to different Redis instances.
+
+    Redis transactions involving multiple keys cannot be used.
+
+    The partitioning granuliary is the key, so it is not possible to shard a dataset with a single huge key like a very big sorted set.
+
+    When partitioning is used, data handling is more complex. For instance, you have to handle multiple RDB/AOF files, and to get a backup of your data you need to aggregate the persistence files from multiple instances and hosts.
+
+    Adding and removing the capacity can be complex. For instance, Redis Cluster supports mostly transparent rebalancing of data with the ability to add and remove nodes at runtime. However, other systems like client-side partitioning and proxies don't support this feature. A technique called Presharding helps in this regard.
+
+Types of Partitioning
+
+There are two types of partitioning available in Redis. Suppose we have four Redis instances, R0, R1, R2, R3 and many keys representing users like user:1, user:2, ... and so forth.
+Range Partitioning
+
+Range partitioning is accomplished by mapping ranges of objects into specific Redis instances. Suppose in our example, the users from ID 0 to ID 10000 will go into instance R0, while the users from ID 10001 to ID 20000 will go into instance R1 and so forth.
+Hash Partitioning
+
+In this type of partitioning, a hash function (eg. modulus function) is used to convert the key into a number and then the data is stored in different-different Redis instances.
+
+
+
