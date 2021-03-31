@@ -25,7 +25,7 @@
 - [Backup](#Backup)
 - [Restore](#Restore)
 - [Benchmark](#Benchmark)
-- [Client Connection](#Client Connection)
+- [Client-Connection](#Client-Connection)
 - [Pipelining](#Pipelining)
 - [Partitioning](#Partitioning)
 - [Restore](#Restore)
@@ -356,7 +356,7 @@ SET: 146198.83 requests per second
 LPUSH: 145560.41 requests per second 
 ```
 
-## Client Connection
+## Client-Connection
 Maximum Number of Clients
 
 Redis accepts clients’ connections on the configured listening TCP port and on the Unix socket, if enabled. When a new client connection is accepted, the following operations are performed −
