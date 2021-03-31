@@ -3,8 +3,6 @@
     <img src="https://download.logo.wine/logo/Redis/Redis-Logo.wine.png" alt="Logo" width=450 height=250>
   </a>
 
-
-
   <p align="center">
     Redis Administration
     <br>
@@ -284,6 +282,20 @@ OK
 ```
 This command will create a dump.rdb and appendonly.aof  file in your Redis directory.
 
+However, these backups can also be automated.
+```shell
+127.0.0.1:6397> save 60 10
+```
+
+In this Redis example, we gave the command two parameters. Now, it will save every 60 seconds if there have been 10 modifications during this time.
+
+However, the save command is not so well suited to be used actively because it prevents clients from being able to access the database. It would be better to use bgsave, since this process runs in the background.
+
+In addition to snapshot mode, there is also the Append Only File (AOF) mode. In this mode, Redis saves every operation you have done in a file. Therefore, if the Redis server unexpectedly crashes, you can see the last operation performed. To activate the AOF mode, you have to make a modification to the configuration file.
+```shell
+127.0.0.1:6397> config set appendonly yes
+```
+
 Bgsave
 
 To create Redis backup, an alternate command BGSAVE is also available. This command will start the backup process and run this in the background.
@@ -291,6 +303,9 @@ To create Redis backup, an alternate command BGSAVE is also available. This comm
 127.0.0.1:6379> BGSAVE  
 Background saving started
 ```
+>For maximum data security, you should regularly create snapshots and activate the AOF mode. By doing so, it is practically impossible to lose any data. However, >these processes do tend to make the database run more slowly.
+
+
 ## Restore
 
 To restore Redis data, move Redis backup file (dump.rdb) into your Redis directory and start the server. To get your Redis directory, use CONFIG command of Redis as shown below.
