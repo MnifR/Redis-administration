@@ -12,7 +12,7 @@
 
 ## Table of contents
 
-- [Start](#start)
+- [What-is-Redis](#What-is-Redis)
 - [Install](#install)
 - [Configuration](#configuration)
 - [Replication](#Replication)
@@ -25,7 +25,7 @@
 - [Partitioning](#Partitioning)
 - [Restore](#Restore)
 
-## Start
+## What-is-Redis?
 
 Redis is an in-memory key-value store that can be used as a database, cache, and message broker. The project is open source and it's currently licensed under the BSD license.
 
