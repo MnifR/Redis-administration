@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://redis.io">
-    <img src="https://download.logo.wine/logo/Redis/Redis-Logo.wine.png" alt="Logo" width=450 height=270>
+    <img src="https://download.logo.wine/logo/Redis/Redis-Logo.wine.png" alt="Logo" width=450 height=283>
   </a>
 
   <p align="center">
